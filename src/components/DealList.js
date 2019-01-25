@@ -15,7 +15,7 @@ class App extends React.Component {
 				data={this.props.deals}
 				renderItem={({item}) => 
 				<DealItem 
-				deals={item} 
+				deal={item} 
 				onPress={this.props.onItemPress}
 				/>
 				}
