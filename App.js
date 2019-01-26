@@ -1,22 +1,44 @@
 import React from 'react';
-import { View, Text, StyleSheet, onItemPress} from 'react-native';
+import { View, Text, StyleSheet, onItemPress, Animated, Dimensions, Easing } from 'react-native';
 import ajax from './src/components/ajax';
 import DealList from './src/components/DealList';
 import DealDetail from './src/components/DealDetail';
 import SearchBar from './src/components/SearchBar';
 
 class App extends React.Component {
-	state ={
+
+
+    titleXPos = new Animated.Value(0);
+
+    state = {
         deals: [],
         dealsFromSearch: [],
-		currentDealId: null,
+		currentDealId: null
 	};
-	
-   async componentDidMount(){
+
+    //-100 on dimensions width accounts for animated texts width
+    animateTitle = (direction = 1) => {
+        const width = Dimensions.get('window').width - 150;
+        Animated.timing(
+            this.titleXPos,
+            {
+                toValue: direction * (width / 2),
+                duration: 1000,
+                easing: Easing.ease,
+            }).start(({ finished }) => {
+                if (finished) {
+                    this.animateTitle(-1 * direction);
+                }
+            });
+    };
+    //animated. is asynchronous so we need a callback in spring 
+    //finished stops animation from going into an infinite loop
+
+    async componentDidMount() {
+        this.animateTitle();
 		const deals = await ajax.fetchInitialDeals();
 		this.setState({ deals });
 	}
-	//asynchronous function so we have to await
 
     searchDeals = async (searchTerm) => {
         let dealsFromSearch = [];
@@ -53,7 +75,8 @@ class App extends React.Component {
                 </View>
             );
         }
-        const dealsToDisplay = this.state.dealsFromSearch.length > 0
+        const dealsToDisplay =
+            this.state.dealsFromSearch.length > 0
             ? this.state.dealsFromSearch
             : this.state.deals;
         if (dealsToDisplay.length > 0) {
@@ -68,9 +91,9 @@ class App extends React.Component {
             );
         }
         return (
-            <View style={styles.container}>
+            <Animated.View style={[{ left: this.titleXPos }, styles.container]}>
                 <Text style={styles.header}>Bakesale</Text>
-            </View>
+            </Animated.View>
         );
     }
 };
