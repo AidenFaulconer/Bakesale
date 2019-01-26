@@ -60,12 +60,12 @@ class App extends React.Component {
 }
 
 const styles = StyleSheet.create({
-	deal:{
-		marginHorizontal: 12,
-	},
+	//deal:{
+	//	marginHorizontal: 12,
+	//},
     detail: {
-        borderColor: '#ccc',
-        borderWidth: 1,
+       // borderColor: '#ccc',
+       // borderWidth: 1,
     },
 
 	image:{
@@ -77,14 +77,15 @@ const styles = StyleSheet.create({
     backLink: {
         marginBottom: 5,
         color: '#22f',
+        marginLeft: 10
     },
 	
 	info:{
 		padding: 10,
 		backgroundColor: '#fff',
-		borderColor: '#bbb',
-		borderWidth: 1,
-		borderTopWidth: 0,
+	//	borderColor: '#bbb',
+		//borderWidth: 1,
+		//borderTopWidth: 0,
 	},
 	
 	title:{
