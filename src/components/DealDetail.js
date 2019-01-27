@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     Dimensions,
     Button,
+	ScrollView,
     Linking,
 } from 'react-native';
 import PropTypes from 'prop-types';
@@ -87,7 +88,7 @@ class DealDetail extends React.Component {
         const { deal } = this.state;
 
         return (
-            <View style={styles.deal}>
+            <ScrollView style={styles.deal}>
                 <TouchableOpacity onPress={this.props.onBack}>
                     <Text style={styles.backLink}> Back</Text>
                 </TouchableOpacity>
@@ -119,7 +120,7 @@ class DealDetail extends React.Component {
                     </View>
                 </View>
 			</View>	
-		</View>
+		</ScrollView>
         );
     }
 }
