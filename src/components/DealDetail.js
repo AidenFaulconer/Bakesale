@@ -1,37 +1,101 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+    View,
+    Text,
+    Image,
+    StyleSheet,
+    PanResponder,
+    Animated,
+    TouchableOpacity,
+    Dimensions,
+    Button,
+    Linking,
+} from 'react-native';
 import PropTypes from 'prop-types';
 
 import {priceDisplay} from './util';
 import ajax from './ajax';
 
+class DealDetail extends React.Component {
 
-//TODO get flow typescript
-class App extends React.Component {
-	static propTypes ={
+    imageXPos = new Animated.Value(0);
+
+    static propTypes = {
         initialDealData: PropTypes.object.isRequired,
         onBack: PropTypes.func.isRequired,
     };
 
+    imagePanResponser = PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onPanResponderMove: (evt, gs) => {
+            this.imageXPos.setValue(gs.dx);
+        },
+        onPanResponderRelease: (evt, gs) => {
+            this.width = Dimensions.get('window').width;
+            if (Math.abs(gs.dx) > this.width * 0.4) {
+                const direction = Math.sign(gs.dx);
+                //-1 for left, +1 for right
+                Animated.timing(this.imageXPos, {
+                    toValue: direction * this.width,
+                    duration: 250,
+                }).start(() => this.handleSwipe(-1 * direction));
+            } else {
+                Animated.spring(this.imageXPos, {
+                    toValue: 0,
+                }).start();
+            } //handle exception where swipe is less than 40% of screen width by resetting value 
+        },
+    });
+
+    handleSwipe = (indexDirection) => {
+        //if image array out of bounds reset swipe and dont update value to next image
+        if (!this.state.deal.media[this.state.imageIndex + indexDirection]) {
+            Animated.spring(this.imageXPos, {
+                toValue: 0,
+            }).start();
+            return;
+        }
+        this.setState((prevState) => ({
+            imageIndex: prevState.imageIndex + indexDirection
+        }), () => {
+            //Next image animation
+            this.imageXPos.setValue(indexDirection  * this.width);
+            Animated.spring(this.imageXPos, {
+                toValue: 0,
+            }).start();
+        });
+    }
+
     state = {
         deal: this.props.initialDealData,
+        imageIndex: 0,
     };
 
-	async componentDidMount(){
-		const fullDeal = await ajax.fetchDealDetail(this.state.deal.key)
+    async componentDidMount() {
+        const fullDeal = await ajax.fetchDealDetail(this.state.deal.key)
         this.setState({
             deal: fullDeal,
         });
-	}
+    }
 
-	render() {
-		const {deal} = this.state;
+    openDealUrl = () => {
+        Linking.openURL(this.state.deal.url);
+    };
+
+    render() {
+
+        const { deal } = this.state;
+
         return (
             <View style={styles.deal}>
                 <TouchableOpacity onPress={this.props.onBack}>
                     <Text style={styles.backLink}> Back</Text>
                 </TouchableOpacity>
-			<Image source={{uri: deal.media[0]}} style={styles.image} />
+                <Animated.Image
+                    {...this.imagePanResponser.panHandlers}
+                    source={{ uri: deal.media[this.state.imageIndex] }}
+                    style={[{ left: this.imageXPos }, styles.image]}
+                />
                 <View style={styles.detail}>
                     <View>
                         <Text style={styles.title}>{deal.title}</Text>
@@ -50,7 +114,8 @@ class App extends React.Component {
                         <View>
                         <View style={styles.description}>
                             <Text style={styles.info}>{deal.description}</Text>
-                        </View>
+                            </View>
+                            <Button title='Buy this deal' onPress={this.openDealUrl}/>
                     </View>
                 </View>
 			</View>	
@@ -119,4 +184,4 @@ const styles = StyleSheet.create({
 	
 });
 
-export default App;
+export default DealDetail;
